@@ -2,6 +2,9 @@ import puppeteer from 'puppeteer-core';
 
 const BASE = process.env.BASE_URL || 'http://localhost:3210';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+// 管理密码从环境变量读取。生产模式下（NODE_ENV=production 或 VERCEL=1）
+// 后台会拒绝弱默认密码，所以这里必须用实际配置的那个。
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'inaue-admin';
 const results = [];
 const check = (name, pass, detail = '') => {
   results.push({ name, pass });
@@ -58,7 +61,7 @@ const loginStatus = (password) =>
   }, password);
 
 check('admin rejects wrong password', (await loginStatus('nope')) === 401);
-check('admin accepts correct password', (await loginStatus('inaue-admin')) === 200);
+check('admin accepts correct password', (await loginStatus(ADMIN_PASSWORD)) === 200);
 
 await page.goto(`${BASE}/admin`, { waitUntil: 'networkidle2' });
 const dash = await page.evaluate(() => document.body.innerText);

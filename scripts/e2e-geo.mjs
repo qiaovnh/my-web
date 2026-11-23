@@ -2,6 +2,8 @@ import puppeteer from 'puppeteer-core';
 
 const BASE = process.env.BASE_URL || 'http://localhost:3210';
 const CHROME = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
+// 同 e2e-admin.mjs：生产模式下必须用实际配置的管理密码
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'inaue-admin';
 const results = [];
 const check = (name, pass, detail = '') => {
   results.push({ name, pass });
@@ -44,9 +46,9 @@ await page.goto(`${BASE}/admin/login`, { waitUntil: 'networkidle2' });
 const loginText = await page.evaluate(() => document.body.innerText);
 check('后台登录页为简体中文', loginText.includes('管理密码') && loginText.includes('登录'));
 
-await page.evaluate(async (B) => {
-  await fetch(`${B}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: 'inaue-admin' }) });
-}, BASE);
+await page.evaluate(async (B, P) => {
+  await fetch(`${B}/api/admin/login`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ password: P }) });
+}, BASE, ADMIN_PASSWORD);
 
 // ---------- 页面管理 ----------
 await page.goto(`${BASE}/admin/pages`, { waitUntil: 'networkidle2' });
