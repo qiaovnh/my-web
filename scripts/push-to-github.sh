@@ -33,16 +33,42 @@ echo
 
 MODE="${1:-}"
 
+# SSH 已授权则直接走，无需交互
+if [ -z "$MODE" ] && [ -f ~/.ssh/id_ed25519 ]; then
+  if ssh -o BatchMode=yes -o ConnectTimeout=8 -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+    MODE="ssh-auto"
+  fi
+fi
+
 if [ -z "$MODE" ]; then
   echo "选择认证方式："
-  echo "  1) Personal Access Token（推荐，一次配置长期有效）"
-  echo "  2) SSH 密钥（需先生成并添加到 GitHub）"
+  echo "  1) Personal Access Token（一次配置长期有效）"
+  echo "  2) SSH 密钥（推荐：自动生成并复制公钥）"
   echo
-  read -r -p "选 1 或 2（直接回车=1）：" CHOICE
-  [ "$CHOICE" = "2" ] && MODE="ssh" || MODE="pat"
+  read -r -p "选 1 或 2（直接回车=2）：" CHOICE
+  [ "$CHOICE" = "1" ] && MODE="pat" || MODE="ssh-setup"
 fi
 
 case "$MODE" in
+  ssh-auto|ssh)
+    if [ ! -f ~/.ssh/id_ed25519 ]; then
+      echo "❌ 未找到 SSH 密钥" >&2
+      exit 1
+    fi
+    if ! ssh -o BatchMode=yes -o ConnectTimeout=8 -T git@github.com 2>&1 | grep -q "successfully authenticated"; then
+      echo "❌ SSH 密钥尚未被 GitHub 接受" >&2
+      echo "   请把公钥添加到 https://github.com/settings/ssh/new" >&2
+      echo "   公钥内容：$(cat ~/.ssh/id_ed25519.pub)" >&2
+      exit 1
+    fi
+    git remote set-url origin "git@github.com:${REPO}.git"
+    echo "→ 使用 SSH 推送"
+    git push -u origin main
+    echo
+    echo "✅ 推送成功"
+    echo "   仓库地址：https://github.com/${REPO}"
+    ;;
+
   pat)
     echo
     echo "请到 https://github.com/settings/tokens 生成 PAT："
@@ -66,7 +92,7 @@ case "$MODE" in
     echo "   仓库地址：https://github.com/${REPO}"
     ;;
 
-  ssh)
+  ssh-setup)
     echo
     echo "=== 生成 SSH 密钥 ==="
     if [ ! -f ~/.ssh/id_ed25519 ]; then
@@ -87,7 +113,6 @@ case "$MODE" in
     echo
     read -r -p "添加完成后按回车继续："
 
-    ssh-keygen -y -f ~/.ssh/id_ed25519 > /dev/null 2>&1
     git remote set-url origin "git@github.com:${REPO}.git"
     echo "远程地址已切换为 SSH：git@github.com:${REPO}.git"
     git push -u origin main
