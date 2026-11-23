@@ -61,16 +61,36 @@ Dashboard → **Settings** → **Environment Variables**，加这 4 个：
 |---|---|---|
 | `STORAGE_DRIVER` | `blob` | 让数据走 Blob |
 | `BLOB_READ_WRITE_TOKEN` | 自动注入 | 上一步连 Blob 后自动出现，不用手填 |
-| `ADMIN_PASSWORD` | 你的强密码 | **不能用默认 `inaue-admin`** |
-| `ADMIN_SECRET` | 32 位以上随机串 | 生成：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
+| `ADMIN_PASSWORD` | 你的强密码（≥8 位） | **不能用默认 `inaue-admin`** |
+| `ADMIN_SECRET` | 32 位以上随机串（≥16 位） | 生成：`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` |
 
 **Production / Preview / Development 三个环境都要勾上。**
+
+> 🔒 **这两个变量现在是强制的。** 代码已加保护：生产环境（Vercel 或 `NODE_ENV=production`）下，
+> 如果 `ADMIN_PASSWORD` / `ADMIN_SECRET` 没配、是默认值、或者长度不够，
+> 后台登录接口会直接返回 **503 `ADMIN_NOT_CONFIGURED`**（而不是放行）。
+> 这是为了防止漏配一次就把管理后台暴露在公网上——之前的行为是静默回退到 `inaue-admin`。
+>
+> 顺带一提，现在 session cookie 在生产环境也带上了 `secure` 属性。
 
 改完环境变量必须**重新部署**才生效：
 
 ```bash
 cd "/Volumes/AI/网站"
 npx vercel --prod --force
+```
+
+### 用命令行部署（可选）
+
+如果你的网络环境访问 `api.vercel.com` 超时，用仓库内置的脚本，它会自动切换到可达的备用 API 域名：
+
+```bash
+# 1. 生成 token：https://vercel.com/account/tokens
+# 2. 登录
+vercel login --token <你的token>
+
+# 3. 部署
+./scripts/deploy-vercel-now.sh
 ```
 
 ---

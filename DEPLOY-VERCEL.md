@@ -34,6 +34,49 @@ vercel login
 > ⚠️ 如果你环境里有 `VERCEL_TOKEN` 变量,会覆盖 CLI 的登录态,报 "token is not valid"。
 > 解决:`unset VERCEL_TOKEN`。
 
+### 用 Token 登录（推荐，无需交互）
+
+浏览器 OAuth 登录在无头/远程环境下不可用。改用 Personal Access Token：
+
+1. 打开 <https://vercel.com/account/tokens> → **Create Token**
+2. 生成后执行：
+
+```bash
+vercel login --token <你的token>
+```
+
+Token 会存到 `~/Library/Application Support/com.vercel.cli/auth.json`，之后所有 `vercel` 命令自动带上。
+
+### 网络受限时的处理
+
+某些网络环境（代理策略、机房 IP）会拦截 `api.vercel.com`，表现为命令卡住或超时。
+Vercel CLI 支持切换 API 域名，改用可达的备用端点即可：
+
+```bash
+# 全局配置（一次性）
+vercel config set api https://api-us.vercel.com
+# 或写入 ~/Library/Application Support/com.vercel.cli/config.json 的 "api" 字段
+
+# 单次命令
+vercel deploy --prod --api https://api-us.vercel.com
+```
+
+验证是否通：
+
+```bash
+vercel api /v2/user --token <你的token> --api https://api-us.vercel.com
+```
+
+返回 `"username"` 就说明链路正常。
+
+### 一键部署
+
+仓库里内置了脚本，自动完成 token 校验、项目关联、API 域名切换：
+
+```bash
+VERCEL_TOKEN=<你的token> ./scripts/deploy-vercel-now.sh
+```
+
 ---
 
 ## 步骤 2：关联项目
