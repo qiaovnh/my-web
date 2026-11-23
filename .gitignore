@@ -44,3 +44,6 @@ Thumbs.db
 
 # Vercel
 .vercel
+
+# 自建服务器部署包（由 scripts/deploy-selfhosted.sh 生成，19MB，Vercel 不需要）
+inaue-deploy-*.tar.gz
