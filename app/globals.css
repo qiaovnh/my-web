@@ -1,0 +1,134 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/fonts/instrument-serif-regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Instrument Serif";
+  src: url("/fonts/instrument-serif-italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+@font-face {
+  font-family: "InterVar";
+  src: url("/fonts/inter-var.woff2") format("woff2");
+  font-weight: 300 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@theme {
+  --color-ink: #283645;
+  --color-ink-soft: #3f4d5f;
+  --color-muted: #6d7885;
+  --color-cream: #f7f5f0;
+  --color-bone: #fbf9f4;
+  --color-sand: #ebe4d6;
+  --color-tan: #a88667;
+  --color-tan-deep: #8b6a4c;
+  --color-forest: #17453a;
+  --color-forest-deep: #11342c;
+  --color-line: #e2ddd2;
+  --color-card: #f4f3f0;
+
+  --font-display: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-sans: "InterVar", ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --breakpoint-wd: 1024px;
+}
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  body {
+    background: var(--color-bone);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-weight: 400;
+    letter-spacing: -0.005em;
+  }
+  ::selection {
+    background: var(--color-forest);
+    color: var(--color-cream);
+  }
+  h1,
+  h2,
+  h3,
+  .display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    letter-spacing: -0.015em;
+  }
+}
+
+@layer components {
+  .wrap {
+    width: 100%;
+    max-width: 1440px;
+    margin-inline: auto;
+    padding-inline: clamp(16px, 2.2vw, 32px);
+  }
+  .eyebrow {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+  }
+  .link-underline {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+    text-decoration-thickness: 1px;
+    text-decoration-color: currentColor;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 52px;
+    padding-inline: 2rem;
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: background-color 220ms ease, color 220ms ease, border-color 220ms ease;
+  }
+  .btn-solid {
+    background: var(--color-ink);
+    color: #fff;
+  }
+  .btn-solid:hover {
+    background: var(--color-forest);
+  }
+  .btn-tan {
+    background: var(--color-tan);
+    color: #fff;
+  }
+  .btn-tan:hover {
+    background: var(--color-tan-deep);
+  }
+  .btn-outline {
+    border: 1px solid currentColor;
+    color: inherit;
+  }
+  .btn-outline:hover {
+    background: currentColor;
+  }
+  .btn-outline:hover > span {
+    color: var(--color-forest);
+  }
+  .no-bar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .no-bar::-webkit-scrollbar {
+    display: none;
+  }
+}
