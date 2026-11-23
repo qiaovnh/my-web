@@ -9,7 +9,12 @@ export type StorageDriver = 'local' | 'blob';
 export function storageDriver(): StorageDriver {
   if (process.env.STORAGE_DRIVER === 'blob') return 'blob';
   if (process.env.STORAGE_DRIVER === 'local') return 'local';
-  return process.env.BLOB_READ_WRITE_TOKEN ? 'blob' : 'local';
+  // Vercel Blob 有两套凭据模型：
+  //   1) 静态 read-write token —— BLOB_READ_WRITE_TOKEN
+  //   2) OIDC 自动轮转        —— VERCEL_OIDC_TOKEN + BLOB_STORE_ID
+  // 项目用 CLI `storage connect --auth oidc --add-rw-token` 连接时两个都会注入，
+  // 但只勾 OIDC 的连接就只有 BLOB_STORE_ID，两种都要认。
+  return process.env.BLOB_READ_WRITE_TOKEN || process.env.BLOB_STORE_ID ? 'blob' : 'local';
 }
 
 /* ------------------------------------------------------------------ *
@@ -64,7 +69,10 @@ async function localWrite(name: string, value: unknown): Promise<void> {
 }
 
 /* ------------------------------------------------------------------ *
- * Vercel Blob 驱动：JSON 文档存私有 blob，图片存公有 blob。
+ * Vercel Blob 驱动：所有内容（JSON 文档 + 上传的图片）都存私有 blob。
+ * 存储用的 store 必须是 private——订单 JSON 里含姓名、电话、地址，
+ * 放 public store 等于把 PII 直接对外裸奔。
+ * 图片对外通过 /media 路由代理输出。
  * ------------------------------------------------------------------ */
 async function blobRead<T>(name: string, fallback: T): Promise<T> {
   try {
