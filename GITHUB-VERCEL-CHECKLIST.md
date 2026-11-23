@@ -1,34 +1,28 @@
 # GitHub → Vercel 发布清单
 
-仓库已初始化并完成首次提交（`b7c94a4`，147 个文件）。照下面四步走即可上线。
+代码已推送完成：<https://github.com/qiaovnh/my-web>（分支 `main`，150 个文件，最新提交 `1a3d8ab`）。
+
+从第 2 步开始走即可上线。
 
 ---
 
-## 第 1 步：建 GitHub 仓库并推送
+## 第 1 步：建 GitHub 仓库并推送 ✅ 已完成
 
-### 1.1 在 GitHub 上建仓库
-
-打开 <https://github.com/new>：
-
-- Repository name：随便取，建议 `inaue`
-- **Public / Private**：都行
-- ⚠️ **不要勾选** "Add a README file"、"Add .gitignore"、"Choose a license"
-  （本地已有这些，勾了会冲突）
-
-### 1.2 推送代码
+仓库地址：<https://github.com/qiaovnh/my-web>
 
 ```bash
 cd "/Volumes/AI/网站"
-
-# 如果你还没建远程仓库，先在 GitHub 上建好，拿到仓库地址后：
-git remote add origin https://github.com/<你的用户名>/inaue.git
-
+git remote add origin https://github.com/qiaovnh/my-web.git
 git push -u origin main
 ```
 
-> 用 SSH 的话：`git remote add origin git@github.com:<你的用户名>/inaue.git`
+以后每次推送可以直接用：
 
-推完 GitHub 上应该能看到 147 个文件。
+```bash
+./scripts/push-now.sh
+```
+
+它会自动检测 SSH 公钥 / PAT 两种认证方式并推送。
 
 ---
 
@@ -36,7 +30,7 @@ git push -u origin main
 
 1. 打开 <https://vercel.com/new>
 2. 用 GitHub 账号登录，授权访问仓库
-3. **Add New → Project**，选中 `inaue` 仓库
+3. **Add New → Project**，选中 `qiaovnh/my-web` 仓库
 4. 确认配置：
    - Framework Preset：**Next.js**（自动识别，别改）
    - Build Command：`npm run build`（自动）
