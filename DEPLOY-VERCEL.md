@@ -103,23 +103,61 @@ vercel
 
 ## 步骤 3：创建 Blob 存储（**最关键的一步**）
 
-Dashboard → 你的项目 → **Storage** → **Create Database** → **Blob** → **Connect to Project**
+### ⚠️ Blob store 必须选 **private**，不能选 public
 
-连接后 `BLOB_READ_WRITE_TOKEN` 会**自动注入**到项目环境变量,不用手填。
+项目的订单 JSON 里含**姓名、电话、收货地址、邮箱**。public store 的对象可以通过直链
+免鉴权访问——等于把客户 PII 公开挂在互联网上。
+
+选 private 后：
+- 订单、设置、商品数据 → private blob，服务端用凭据读写
+- 上传的图片 → 也存 private，由本项目的 `/media` 路由代理输出
+
+### 用 CLI 连接（推荐，一条命令搞定）
+
+Dashboard → Storage → Create Blob → **Access: Private** → Connect to Project 也可以，
+但 CLI 更省事，会自动把三个环境变量都注入：
+
+```bash
+# 建 store 并连到当前项目（三环境全连）
+vercel blob create-store inaue-private --access private --yes
+
+# 或者连接已有的 store
+vercel storage connect <store-id> --auth oidc --add-rw-token --yes
+```
+
+`--add-rw-token` 很重要：Vercel Blob 现在默认走 OIDC（`BLOB_STORE_ID` + `VERCEL_OIDC_TOKEN`，
+凭据自动轮转），但**只有显式加这个参数**才会同时注入静态的 `BLOB_READ_WRITE_TOKEN`。
+项目代码两种都认（见 `lib/storefront/db.ts` 的 `storageDriver()`），但静态 token 对
+本地开发、CI 更省事。
+
+连接后自动注入这三个变量：
+
+| 变量 | 用途 |
+|---|---|
+| `BLOB_READ_WRITE_TOKEN` | 静态读写凭据 |
+| `BLOB_STORE_ID` | store 标识（配合 OIDC 用） |
+| `BLOB_WEBHOOK_PUBLIC_KEY` | 公钥 |
+
+验证连接状态：
+
+```bash
+vercel storage status
+```
 
 ---
 
 ## 步骤 4：设置环境变量
 
-Dashboard → **Settings** → **Environment Variables**,下面 4 项都要加,
+Dashboard → **Settings** → **Environment Variables**,下面 3 项都要加,
 并且 **Production / Preview / Development 三个环境都勾上**:
 
 | 变量 | 值 |
 |---|---|
 | `STORAGE_DRIVER` | `blob` |
-| `BLOB_READ_WRITE_TOKEN` | Blob 连接后自动注入,不用手填 |
-| `ADMIN_PASSWORD` | 你的强密码(**不能用默认的 `inaue-admin`**) |
-| `ADMIN_SECRET` | 32 位以上随机串 |
+| `ADMIN_PASSWORD` | 你的强密码(**不能用默认的 `inaue-admin`**,≥8 位) |
+| `ADMIN_SECRET` | 32 位以上随机串(≥16 位) |
+
+`BLOB_READ_WRITE_TOKEN` 由上面的 storage connect 自动注入,不用手填。
 
 生成随机密钥:
 
@@ -128,6 +166,9 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 > 环境变量改动**需要重新部署才生效**。
+>
+> 生产环境如果 `ADMIN_PASSWORD` / `ADMIN_SECRET` 没配好或还是弱默认值，
+> 后台登录接口会直接返回 **503 `ADMIN_NOT_CONFIGURED`**，而不是用弱密码放行。
 
 ---
 
@@ -152,9 +193,29 @@ bash scripts/deploy-vercel.sh --prod
 2. **后台 → GEO 优化 → 把「站点域名」改成你的域名**
    默认是 `https://inaue.co`,不改的话 `sitemap.xml`、`llms.txt` 里的链接全是错的
 3. 建一个商品 → 刷新 → 还在 → 说明 Blob 生效
-4. 上传一张图 → 图片地址应该是 `*.public.blob.vercel-storage.com` → 说明图片走 Blob
+4. 上传一张图 → 图片地址应该是 **`/media/xxx.png`**（本站路径）→ 说明图片走 Blob
+   > private store 的对象没有公开直链,图片统一由 `/media/[name]` 路由代理输出。
+   > 所以图片地址**不是** `*.blob.vercel-storage.com`,这是正常的。
 5. 下一单 → `/admin/orders` 有记录
 6. 访问 `/llms.txt`、`/sitemap.xml`、`/robots.txt` 确认正常
+
+---
+
+## 坑 3：public store 和 private store 不能混用
+
+Vercel Blob 的访问级别是 **store 级**的，不是对象级的：
+
+| store 类型 | 写入 `access: 'private'` | 写入 `access: 'public'` |
+|---|---|---|
+| public store | ❌ `Cannot use private access on a public store` | ✅ |
+| private store | ✅ | ❌ `Cannot use public access on a private store` |
+
+原代码有 3 处踩在这上面，已修复（见 `lib/admin/uploads.ts`、`app/media/[name]/route.ts`、
+`lib/storefront/db.ts`）：
+
+1. 上传图片用 `access: 'public'` → 改成 `'private'`，对外只暴露 `/media/xxx` 路径
+2. 读 blob 时字段路径写错（`contentLength`/`contentType` 实际在 `result.blob` 下）
+3. `/media` 代理硬写 `Content-Length`，blob 没给长度时会把响应截断成坏图
 
 ---
 
