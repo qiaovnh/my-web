@@ -1,0 +1,14 @@
+# 兄弟项目：宠物 GPS 追踪器站，有独立仓库（qiaovnh/pet-web）
+# 不排除的话，Vercel 构建茶叶站时会把它的源码一起扫进 TypeScript 编译，
+# 导致模块解析串味、类型报错
+pawtrail/
+
+# 本地数据与构建产物
+.data/
+.next/
+out/
+dist/
+node_modules/
+
+# 运行时数据（订单含 PII，不应进构建上下文）
+*.tar.gz

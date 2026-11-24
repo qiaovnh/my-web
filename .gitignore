@@ -52,3 +52,8 @@ inaue-deploy-*.tar.gz
 # 注意顺序——.env.example 是模板，需要入库，所以用 ! 显式放行
 .env*
 !.env.example
+
+# 兄弟项目：宠物 GPS 追踪器站，有自己的独立仓库（qiaovnh/pet-web）
+# 必须排除，否则 Vercel 构建茶叶站时会把它的源码一起扫进去，
+# 导致模块解析串味、TypeScript 报错（如 Cannot find module '@/components/home/hero-video'）
+pawtrail/
