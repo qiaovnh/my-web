@@ -51,7 +51,7 @@ export const DEFAULT_GEO: Geo = {
         '可以按咖啡因等级筛选：无咖啡因适合晚间，低咖啡因适合下午，中高咖啡因适合早晨。也可以从抹茶或无咖啡因草本入门。',
     },
   ],
-  canonicalBase: 'https://inaue.co',
+  canonicalBase: 'https://www.inaue.com',
   allowAiCrawlers: true,
   updatedAt: Date.now(),
 };

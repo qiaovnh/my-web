@@ -50,7 +50,7 @@ check('cart persisted server-side', cartJson?.cart?.lines?.length === 1, JSON.st
 await page.goto(`${BASE}/checkout`, { waitUntil: 'networkidle2' });
 const onCheckout = page.url().includes('/checkout');
 check('checkout reachable with items', onCheckout);
-await page.type('#email', 'demo@inaue.co');
+await page.type('#email', 'demo@inaue.com');
 await page.type('#name', 'Ada Lovelace');
 await page.type('#address', '12 Garden Row');
 await page.type('#city', 'Portland');

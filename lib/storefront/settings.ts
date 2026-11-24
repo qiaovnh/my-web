@@ -14,7 +14,7 @@ const FILE = 'settings.json';
 export const DEFAULT_SETTINGS: Settings = {
   storeName: 'INAUE',
   announcement: 'Free shipping on orders over $75 · 30-day freshness guarantee',
-  supportEmail: 'hello@inaue.co',
+  supportEmail: 'hello@inaue.com',
   supportHours: 'Mon–Fri, 8AM–5PM CST',
   freeShippingThreshold: 75,
   taxRate: 0.0825,
